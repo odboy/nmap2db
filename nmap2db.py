@@ -79,7 +79,7 @@ def conv2db(xml,DBurl):
                     portinfo["mark"] = "https://%s:%s"%(portinfo["ip"],portinfo["port"])
                 else:
                     portinfo["mark"] = ""
-                jsoninfo.append(portinfo)
+                jsoninfo.append(portinfo.copy())
                 recordflag = 1
         if recordflag == 0:
             portinfo["protocol"]    =   ""
