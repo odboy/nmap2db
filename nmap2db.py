@@ -6,7 +6,7 @@ import os
 import time
 import argparse
 import xml.etree.ElementTree as ET
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, Sequence
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, Sequence, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -21,10 +21,11 @@ class Output(BaseModle):
 
     __tablename__ = "nmap2db"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    scantime = Column(String(30))
-    ip = Column(String(30))
+    scantime = Column(DateTime)
     protocol = Column(String(10))
-    port = Column(String(10))
+    ip = Column(String(30))
+    port = Column(Integer)
+    ipport = Column(String(30))
     name = Column(String(30))
     product = Column(String(100))
     mark = Column(String(50))
@@ -48,7 +49,7 @@ def getDBurl(dbtype,username,password,host,port,db):
 
     # 链接数据库   '数据库类型+数据库驱动名称://用户名:口令@机器地址:端口号/数据库名'
     if dbtype not in ('sqlite','csv'):
-        dburl = "%s://%s:%s@%s:%d/%s"%(dbtypedict[dbtype][0],username,password,host, port if port is not None else dbtypedict[dbtype][1],db)
+        dburl = "%s://%s:%s@%s:%d/%s"%(dbtypedict[dbtype][0],username,password,host, int(port) if port is not None else dbtypedict[dbtype][1],db)
     else:
         dburl = "%s:///%s" % (dbtypedict[dbtype][0], os.path.realpath(db+"."+dbtype))
     return dburl
@@ -73,6 +74,7 @@ def conv2db(xml,DBurl):
                 portinfo["port"]        =   port.get("portid","")
                 portinfo["name"]        =   service.get("name","")
                 portinfo["product"]     =   service.get("product","")
+                portinfo["ipport"]      =   portinfo["ip"]+":"+portinfo["port"]
                 if portinfo["name"].lower() in ("http",'http-alt'):
                     portinfo["mark"] = "http://%s:%s"%(portinfo["ip"],portinfo["port"])
                 elif portinfo["name"].lower() in ("https",'https-alt'):
